@@ -1,20 +1,29 @@
-import { Injectable } from '@nestjs/common';
-import { randomUUID } from 'crypto';
+import { Inject, Injectable } from '@nestjs/common';
+import { ClientProxy } from '@nestjs/microservices';
+import { firstValueFrom } from 'rxjs';
+import { CommandsUsuario } from './const/commandsUsuario.const';
 import { AuthLoginDto } from './dto/request/authLogin.dto';
-import { AuthLoginResponseDto } from './dto/response/authLogin.dto';
+import { AuthLoginResponseDto, UserDto } from './dto/response/authLogin.dto';
 
 @Injectable()
 export class AppService {
-  userLogin(payload: AuthLoginDto): AuthLoginResponseDto {
-    console.log('chegou aqui: ', payload);
+  constructor(@Inject('USUARIO_SERVICE') private clientProxy: ClientProxy) {}
 
-    if (payload.user === 'login@email.com' && payload.password === '1234') {
+  async userLogin(payload: AuthLoginDto): Promise<AuthLoginResponseDto> {
+    const user = await firstValueFrom<UserDto>(
+      this.clientProxy.send(
+        { command: CommandsUsuario.GET_USUARIO_LOGIN },
+        payload.user,
+      ),
+    );
+
+    if (payload.password === user.password) {
+      //remove a senha do usuário
+      delete user.password;
+
       return {
         valid: true,
-        user: {
-          id: randomUUID(),
-          name: 'nome do usuário',
-        },
+        user: user,
       };
     }
     return { valid: false };

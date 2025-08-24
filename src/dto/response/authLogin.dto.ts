@@ -3,7 +3,9 @@ export class AuthLoginResponseDto {
   user?: UserDto;
 }
 
-class UserDto {
+export class UserDto {
   id: string;
   name: string;
+  email: string;
+  password?: string;
 }
