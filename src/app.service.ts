@@ -1,5 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
+import * as jwt from 'jsonwebtoken';
 import { firstValueFrom } from 'rxjs';
 import { CommandsUsuario } from './const/commandsUsuario.const';
 import { AuthLoginDto } from './dto/request/authLogin.dto';
@@ -21,11 +22,23 @@ export class AppService {
       //remove a senha do usuário
       delete user.password;
 
+      const token_jwt = this.createJwt(user);
+
       return {
         valid: true,
         user: user,
+        tokenJwt: token_jwt,
       };
     }
     return { valid: false };
+  }
+
+  private createJwt(user: UserDto) {
+    const secret = process.env.SECRET_JWT as string;
+    const options = {
+      expiresIn: '1h',
+    } as jwt.SignOptions;
+
+    return jwt.sign(user, secret, options);
   }
 }

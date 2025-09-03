@@ -1,6 +1,7 @@
 export class AuthLoginResponseDto {
   valid: boolean;
   user?: UserDto;
+  tokenJwt?: string;
 }
 
 export class UserDto {
